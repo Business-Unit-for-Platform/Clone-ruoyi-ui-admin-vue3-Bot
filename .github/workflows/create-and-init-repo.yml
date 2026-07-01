@@ -3,6 +3,22 @@ name: Create and init Vue3 UI repo (org, Pages + Cloudflare full auto)
 on:
   workflow_dispatch:
     inputs:
+      target_org:
+        description: "目标 GitHub 组织名"
+        required: false
+        default: "Business-Unit-for-Platform"
+      source_owner:
+        description: "源 GitHub owner/org"
+        required: false
+        default: "Business-Unit-for-Platform"
+      source_repo:
+        description: "源仓库名"
+        required: false
+        default: "yudao-ui-admin-vue3"
+      source_ref:
+        description: "源分支/标签"
+        required: false
+        default: "master"
       repo_name:
         description: "要创建的新 GitHub 仓库名（例如: future-ui-admin-vue3）"
         required: true
@@ -53,14 +69,15 @@ on:
 jobs:
   create-and-init:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-
     defaults:
       run:
         shell: bash
 
     env:
-      ORG: FutureTechQuant
+      ORG: ${{ github.event.inputs.target_org || 'Business-Unit-for-Platform' }}
+      SOURCE_OWNER: ${{ github.event.inputs.source_owner || 'Business-Unit-for-Platform' }}
+      SOURCE_REPO: ${{ github.event.inputs.source_repo || 'yudao-ui-admin-vue3' }}
+      SOURCE_REF: ${{ github.event.inputs.source_ref || 'master' }}
       NEW_REPO: ${{ github.event.inputs.repo_name }}
       REPO_DESC: ${{ github.event.inputs.repo_description }}
       PRIVATE: ${{ github.event.inputs.private }}
@@ -149,8 +166,8 @@ jobs:
       - name: Clone from Gitee
         run: |
           set -euo pipefail
-          git clone -q --depth=1 --single-branch \
-            https://github.com/FutureTechQuant/yudao-ui-admin-vue3.git source
+          git clone -q -b "${SOURCE_REF}" --depth=1 --single-branch \
+            "https://github.com/${SOURCE_OWNER}/${SOURCE_REPO}.git" source
 
           rm -rf source/.git source/.gitee source/.github \
                  source/README.md source/README-zh_CN.md
